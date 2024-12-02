@@ -19,6 +19,7 @@
         <li><a href="#user-endpoints">User Endpoints</a></li>
         <li><a href="#author-endpoints">Author Endpoints</a></li>
         <li><a href="#book-endpoints">Book Endpoints</a></li>
+        <li><a href="#book-author-association-endpoints">Book-Author Endpoints</a></li>
       </ul>
     </li>
     <li><a href="#token-management">Token Management</a></li>
