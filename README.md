@@ -517,6 +517,219 @@ The Library Management System offers a reliable and streamlined solution for man
 
 <p align="right">(<a href="#library-management-system">back to top</a>)</p>
 
+<h3 id="book-author-association-endpoints">4. Book-Author Endpoints</h3>
+
+**a. Add Book-Author** - Adds a new association between a book and an author.
+
+- **Endpoint:** `/books_author/add`
+- **Method:** `POST`
+- **Headers:** `Authorization: Bearer <insert generated jwtTokenHere>`
+- **Sample Payload:**
+
+  ```json
+  {
+    "bookid": 1,
+    "authorid": 2
+  }
+  ```
+
+- **Expected Response:**
+
+  - **Success:**
+
+    ```json
+    {
+      "status": "success",
+      "token": "jwtTokenHere",
+      "data": null
+    }
+    ```
+
+  - **Failure:** If the token is already used, invalid/expired, or if required fields (book ID or author ID) are missing, the response will indicate the specific error.
+
+**b. Display All Book-Author** - Displays all book-author associations in the database with their corresponding IDs.
+
+- **Endpoint:** `/books_author/display`
+- **Method:** `GET`
+- **Headers:** `Authorization: Bearer <insert generated jwtTokenHere>`
+
+- **Expected Response:**
+
+  - **Success:**
+
+    ```json
+    {
+      "status": "success",
+      "token": "jwtTokenHere",
+      "data": [
+        {
+          "collectionid": 1,
+          "bookid": 1,
+          "authorid": 2
+        }
+      ]
+    }
+    ```
+
+  - **Failure:** If the token is already used, invalid/expired, or any database issue occurs, the response will indicate the specific error.
+
+**c. Display Book-Author with Names** - Displays book-author associations with the book and author names instead of IDs.
+
+- **Endpoint:** `/books_author/display_with_names`
+- **Method:** `GET`
+- **Headers:** `Authorization: Bearer <insert generated jwtTokenHere>`
+
+- **Expected Response:**
+
+  - **Success:**
+
+    ```json
+    {
+      "status": "success",
+      "token": "jwtTokenHere",
+      "data": [
+        {
+          "collectionid": 1,
+          "book_name": "Book Title 1",
+          "author_name": "Author Name 1"
+        }
+      ]
+    }
+    ```
+
+  - **Failure:** If the token is already used, invalid/expired, or any database issue occurs, the response will indicate the specific error.
+
+**d. Update Book-Author** - Updates an existing book-author association by changing the book and/or author ID.
+
+- **Endpoint:** `/books_author/update`
+- **Method:** `PUT`
+- **Headers:** `Authorization: Bearer <insert generated jwtTokenHere>`
+- **Sample Payload:**
+
+  ```json
+  {
+    "collectionid": 1,
+    "bookid": 2,
+    "authorid": 3
+  }
+  ```
+
+- **Expected Response:**
+
+  - **Success:**
+
+    ```json
+    {
+      "status": "success",
+      "token": "jwtTokenHere",
+      "data": null
+    }
+    ```
+
+  - **Failure:** If the token is already used, invalid/expired, if the collection ID is missing or not found, or no fields are provided to update, the response will indicate the specific error.
+
+**e. Delete Book-Author** - Deletes a specific book-author association.
+
+- **Endpoint:** `/books_author/delete`
+- **Method:** `DELETE`
+- **Headers:** `Authorization: Bearer <insert generated jwtTokenHere>`
+- **Sample Payload:**
+
+  ```json
+  {
+    "collectionid": 1
+  }
+  ```
+
+- **Expected Response:**
+
+  - **Success:**
+
+    ```json
+    {
+      "status": "success",
+      "token": "jwtTokenHere",
+      "data": null
+    }
+    ```
+
+  - **Failure:** If the token is already used, invalid/expired, if the collection ID is missing or no association exists for the given ID, the response will indicate the specific error.
+
+<p align="right">(<a href="#library-management-system">back to top</a>)</p>
+
+## Token Management
+
+**Token Rotation**
+
+The `generateToken` function creates a JWT for user authentication, with a 2-hour expiration time, including the user ID in the payload, and the token is signed using the HS256 algorithm.
+
+```php
+function generateToken($userid)
+{
+    global $key;
+
+    $iat = time();
+    $exp = $iat + 7200;
+
+    $payload = [
+        'iss' => 'http://library.org',
+        'aud' => 'http://library.com',
+        'iat' => $iat,
+        'exp' => $exp,
+        'data' => [
+            'userid' => $userid
+        ]
+    ];
+
+    return JWT::encode($payload, $key, 'HS256');
+}
+```
+
+**Check if Token is Used**  
+The `isTokenUsed` function checks the `used_tokens` table to see if the token has been recorded as used.
+
+```php
+function isTokenUsed($token, $conn)
+{
+    $stmt = $conn->prepare("SELECT * FROM used_tokens WHERE token = :token");
+    $stmt->bindParam(':token', $token);
+    $stmt->execute();
+    return $stmt->rowCount() > 0;
+}
+```
+
+**Validate Token**  
+The `validateToken` function decodes and validates the token using the secret key, returning `false` if the token is invalid or expired.
+
+```php
+function validateToken($token, $key)
+{
+    try {
+        return JWT::decode($token, new Key($key, 'HS256'));
+    } catch (Exception $e) {
+        return false;
+    }
+}
+```
+
+**Mark Token as Used**  
+The `markTokenAsUsed` function inserts the token into the `used_tokens` table, marking it as used to prevent reuse.
+
+```php
+function markTokenAsUsed($conn, $token)
+{
+    try {
+        $stmt = $conn->prepare("INSERT INTO used_tokens (token) VALUES (:token)");
+        $stmt->bindParam(':token', $token);
+        $stmt->execute();
+    } catch (PDOException $e) {
+        throw new Exception("Error marking token as used: " . $e->getMessage());
+    }
+}
+```
+
+<p align="right">(<a href="#library-management-system">back to top</a>)</p>
+
 ## Token Management
 
 **Token Rotation**
