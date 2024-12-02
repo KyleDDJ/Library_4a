@@ -594,7 +594,7 @@ function markTokenAsUsed($conn, $token)
 
 ## Project Information
 
-This project is developed as part of a midterm school requirement for ITPC 115. It is aimed at demonstrating knowledge and skills in building secure API endpoints and token management.
+This project was developed as a midterm requirement for the ITPC 115 course. It showcases proficiency in designing secure API endpoints and implementing effective token management.
 
 <p align="right">(<a href="#library-management-system">back to top</a>)</p>
 
