@@ -1,4 +1,4 @@
-<h1 id="library-management-system">Library Management System with Secure Token Authentication</h1>
+<h1 id="library-management-system">Token-Authenticated Library Management System</h1>
 
 <!-- TABLE OF CONTENTS -->
 <details>
